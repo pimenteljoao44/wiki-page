@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiki - Sistema de Gestão para Marmoraria</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="wiki-container">
+        <!-- Header -->
+        <header class="wiki-header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-book"></i>
+                    <h1 id="pageTitle">Wiki Técnica - Sistema Marmoraria</h1>
+                </div>
+                <div class="header-actions">
+                    <div class="search-container">
+                        <input type="text" id="searchInput" placeholder="Buscar na documentação...">
+                        <i class="fas fa-search"></i>
+                    </div>
+
+                </div>
+            </div>
+        </header>
+
+        <div class="wiki-body">
+            <!-- Sidebar -->
+            <nav class="sidebar">
+                <div class="sidebar-content">
+                    <h3>Navegação</h3>
+                    <ul class="nav-menu" id="navList">
+                        <li><a href="#introducao" class="nav-link active">📋 Introdução</a></li>
+                        <li><a href="#visao-geral" class="nav-link">🎯 Visão Geral</a></li>
+                        <li><a href="#arquitetura" class="nav-link">🏗️ Arquitetura</a></li>
+                        <li><a href="#banco-dados" class="nav-link">🗄️ Banco de Dados</a></li>
+                        <li><a href="#configuracao" class="nav-link">⚙️ Configuração</a></li>
+                        <li><a href="#api" class="nav-link">🔌 API</a></li>
+                        <li><a href="#padroes" class="nav-link">📐 Padrões</a></li>
+                        <li><a href="#contribuicao" class="nav-link">🤝 Contribuição</a></li>
+                        <li><a href="#deploy" class="nav-link">🚀 Deploy</a></li>
+                    </ul>
+
+                    <div class="sidebar-section">
+                        <h4>Recursos Adicionais</h4>
+                        <ul class="resource-links">
+                            <li><a href="#diagramas">Ainda não implementado rapaziada</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-footer">
+                        <p>Última atualização: <span id="lastUpdate">Setembro 2025</span></p>
+                        <p>Versão: <span class="version-badge">2.0</span></p>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <div class="content-wrapper">
+                    <!-- Breadcrumb -->
+                    <nav class="breadcrumb" id="breadcrumb">
+                        <span>Início</span>
+                        <i class="fas fa-chevron-right"></i>
+                        <span id="currentSection">Introdução</span>
+                    </nav>
+
+                    <!-- Content Area -->
+                    <article class="content-area" id="content">
+                        <!-- Conteúdo será carregado dinamicamente aqui -->
+                    </article>
+
+                    <!-- Table of Contents -->
+                    <aside class="toc">
+                        <h4>Nesta Página</h4>
+                        <ul id="tocList">
+                            <!-- TOC será gerado dinamicamente -->
+                        </ul>
+                    </aside>
+                </div>
+
+                <!-- Footer -->
+                <footer class="content-footer">
+                    <div class="footer-actions">
+                        <button class="btn-secondary" onclick="editSection()">
+                            <i class="fas fa-edit"></i>
+                            Editar esta seção
+                        </button>
+                        <button class="btn-secondary" onclick="addSection()">
+                            <i class="fas fa-plus"></i>
+                            Adicionar seção
+                        </button>
+                        <button class="btn-secondary" onclick="exportPage()">
+                            <i class="fas fa-download"></i>
+                            Exportar
+                        </button>
+                    </div>
+                    <div class="footer-info">
+                        <p>Esta documentação é mantida pela equipe de desenvolvimento.</p>
+                        <p>Contribuições são bem-vindas! <a href="#contribuicao">Saiba como contribuir</a></p>
+                    </div>
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal para edição -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Seção</h3>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <textarea id="editTextarea" placeholder="Digite o conteúdo em Markdown..."></textarea>
+                <div class="edit-toolbar">
+                    <button onclick="insertMarkdown('**', '**')" title="Negrito"><i class="fas fa-bold"></i></button>
+                    <button onclick="insertMarkdown('*', '*')" title="Itálico"><i class="fas fa-italic"></i></button>
+                    <button onclick="insertMarkdown('`', '`')" title="Código"><i class="fas fa-code"></i></button>
+                    <button onclick="insertMarkdown('### ', '')" title="Título"><i class="fas fa-heading"></i></button>
+                    <button onclick="insertMarkdown('- ', '')" title="Lista"><i class="fas fa-list"></i></button>
+                    <button onclick="insertMarkdown('[', '](url)')" title="Link"><i class="fas fa-link"></i></button>
+                    <button onclick="triggerImageUpload()" title="Inserir Imagem"><i class="fas fa-image"></i></button>
+                    <input type="file" id="imageUploadInput" onchange="uploadImage(event)" accept="image/*"
+                        style="display: none;" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeEditModal()">Cancelar</button>
+                <button class="btn-primary" onclick="saveEdit()">Salvar</button>
+            </div>
+            <div class="edit-toolbar">
+                <button onclick="triggerImageUpload()" title="Inserir Imagem"><i class="fas fa-image"></i></button>
+                <input type="file" id="imageUploadInput" onchange="uploadImage(event)" accept="image/*"
+                    style="display: none;" />
+            </div>
+        </div>
+    </div>
+
+    <div id="contextMenu" class="context-menu">
+    <ul>
+        <li id="deleteOption"><i class="fas fa-trash-alt"></i> Excluir Seção</li>
+    </ul>
+</div>
+
+<div id="confirmDeleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Confirmar Exclusão</h3>
+            <button class="modal-close" id="closeDeleteModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Você tem certeza de que deseja excluir a seção <strong id="sectionToDeleteName"></strong>?</p>
+            <p>Esta ação não pode ser desfeita.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" id="cancelDeleteBtn">Cancelar</button>
+            <button class="btn-danger" id="confirmDeleteBtn">Sim, Excluir</button>
+        </div>
+    </div>
+</div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="js/wiki.js"></script>
+</body>
+
+</html>
