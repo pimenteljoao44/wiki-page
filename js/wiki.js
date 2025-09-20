@@ -1,6 +1,6 @@
 class WikiSystem {
   constructor() {
-    this.apiBaseUrl = "http://localhost:8080";
+    this.apiBaseUrl = "https://wiki-api.ddns.net";
     this.pageToDelete = null;
     this.currentSection = 'introducao';
     this.editMode = false;
