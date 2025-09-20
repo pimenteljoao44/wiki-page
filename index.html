@@ -23,6 +23,7 @@
                 <div class="header-actions">
                     <div class="search-container">
                         <input type="text" id="searchInput" placeholder="Buscar na documentação...">
+                        <div id="searchResults" class="search-results"></div>
                         <i class="fas fa-search"></i>
                     </div>
 
@@ -52,11 +53,6 @@
                         <ul class="resource-links">
                             <li><a href="#diagramas">Ainda não implementado rapaziada</a></li>
                         </ul>
-                    </div>
-
-                    <div class="sidebar-footer">
-                        <p>Última atualização: <span id="lastUpdate">Setembro 2025</span></p>
-                        <p>Versão: <span class="version-badge">2.0</span></p>
                     </div>
                 </div>
             </nav>
@@ -103,7 +99,7 @@
                     </div>
                     <div class="footer-info">
                         <p>Esta documentação é mantida pela equipe de desenvolvimento.</p>
-                        <p>Contribuições são bem-vindas! <a href="#contribuicao">Saiba como contribuir</a></p>
+                        <p>Contribuições são bem-vindas!</p>
                     </div>
                 </footer>
             </main>
@@ -134,11 +130,6 @@
             <div class="modal-footer">
                 <button class="btn-secondary" onclick="closeEditModal()">Cancelar</button>
                 <button class="btn-primary" onclick="saveEdit()">Salvar</button>
-            </div>
-            <div class="edit-toolbar">
-                <button onclick="triggerImageUpload()" title="Inserir Imagem"><i class="fas fa-image"></i></button>
-                <input type="file" id="imageUploadInput" onchange="uploadImage(event)" accept="image/*"
-                    style="display: none;" />
             </div>
         </div>
     </div>

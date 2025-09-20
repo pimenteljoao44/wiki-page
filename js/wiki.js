@@ -41,10 +41,10 @@ class WikiSystem {
     const closeDeleteModal = document.getElementById('closeDeleteModal');
 
     deleteOption.addEventListener('click', () => {
-        if (this.pageToDelete) {
-            document.getElementById('sectionToDeleteName').textContent = this.pageToDelete.title;
-            confirmDeleteModal.style.display = 'block';
-        }
+      if (this.pageToDelete) {
+        document.getElementById('sectionToDeleteName').textContent = this.pageToDelete.title;
+        confirmDeleteModal.style.display = 'block';
+      }
     });
 
     const closeModal = () => confirmDeleteModal.style.display = 'none';
@@ -52,8 +52,15 @@ class WikiSystem {
     closeDeleteModal.addEventListener('click', closeModal);
 
     confirmDeleteBtn.addEventListener('click', () => {
-        this.deletePage();
+      this.deletePage();
     });
+
+    document.addEventListener('click', (e) => {
+    const searchContainer = document.querySelector('.search-container');
+    if (!searchContainer.contains(e.target)) {
+        this.hideSearchResults();
+    }
+});
   }
 
   setupNavEventListeners() {
@@ -61,30 +68,30 @@ class WikiSystem {
     const contextMenu = document.getElementById('contextMenu');
 
     navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const section = link.getAttribute('href').substring(1);
-            this.navigateToSection(section);
-        });
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const section = link.getAttribute('href').substring(1);
+        this.navigateToSection(section);
+      });
 
-        link.addEventListener('contextmenu', (e) => {
-            e.preventDefault(); // Impede o menu padrão do navegador
-            
-            const key = link.getAttribute('href').substring(1);
-            const pageData = this.content[key];
+      link.addEventListener('contextmenu', (e) => {
+        e.preventDefault(); // Impede o menu padrão do navegador
 
-            this.pageToDelete = { id: pageData.id, key: pageData.key, title: pageData.title };
+        const key = link.getAttribute('href').substring(1);
+        const pageData = this.content[key];
 
-            contextMenu.style.top = `${e.clientY}px`;
-            contextMenu.style.left = `${e.clientX}px`;
-            contextMenu.style.display = 'block';
-        });
+        this.pageToDelete = { id: pageData.id, key: pageData.key, title: pageData.title };
+
+        contextMenu.style.top = `${e.clientY}px`;
+        contextMenu.style.left = `${e.clientX}px`;
+        contextMenu.style.display = 'block';
+      });
     });
 
     window.addEventListener('click', () => {
-        contextMenu.style.display = 'none';
+      contextMenu.style.display = 'none';
     });
-}
+  }
 
   async loadContent() {
     try {
@@ -110,6 +117,8 @@ class WikiSystem {
       });
 
       this.setupNavEventListeners();
+
+      this.buildSearchIndex();
 
       const initialSection = window.location.hash ? window.location.hash.substring(1) : Object.keys(this.content)[0];
       if (initialSection) {
@@ -245,8 +254,6 @@ class WikiSystem {
   }
 
   setupSearch() {
-    this.buildSearchIndex();
-
     const searchInput = document.getElementById('searchInput');
     let searchTimeout;
 
@@ -290,11 +297,34 @@ class WikiSystem {
   }
 
   showSearchResults(results, query) {
-    console.log('Resultados da busca:', results);
+    const resultsContainer = document.getElementById('searchResults');
+    resultsContainer.innerHTML = '';
+
+    if (results.length === 0) {
+      resultsContainer.innerHTML = '<div class="no-results">Nenhum resultado encontrado.</div>';
+    } else {
+      results.forEach(item => {
+        const link = document.createElement('a');
+        link.href = `#${item.section}`;
+        link.textContent = item.title;
+
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateToSection(item.section);
+          this.hideSearchResults();
+          document.getElementById('searchInput').value = '';
+        });
+
+        resultsContainer.appendChild(link);
+      });
+    }
+
+    resultsContainer.style.display = 'block';
   }
 
   hideSearchResults() {
-    //fazer depois
+    const resultsContainer = document.getElementById('searchResults');
+    resultsContainer.style.display = 'none';
   }
 
   toggleEditMode() {
@@ -329,55 +359,55 @@ class WikiSystem {
     const pageToUpdate = this.content[this.currentSection];
 
     const updateDTO = {
-        key: pageToUpdate.key,
-        title: pageToUpdate.title,
-        content: newContent
+      key: pageToUpdate.key,
+      title: pageToUpdate.title,
+      content: newContent
     };
 
     const saveButton = document.querySelector('#editModal .btn-primary');
     const originalButtonText = saveButton.innerHTML;
-    
+
     try {
-        saveButton.disabled = true;
-        saveButton.innerHTML = 'Salvando...';
+      saveButton.disabled = true;
+      saveButton.innerHTML = 'Salvando...';
 
-        const response = await fetch(`${this.apiBaseUrl}/api/wiki-pages/${pageToUpdate.id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updateDTO),
-        });
+      const response = await fetch(`${this.apiBaseUrl}/api/wiki-pages/${pageToUpdate.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateDTO),
+      });
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: `Erro ao salvar! Status: ${response.status}` }));
-            throw new Error(errorData.message || 'Ocorreu um erro desconhecido.');
-        }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: `Erro ao salvar! Status: ${response.status}` }));
+        throw new Error(errorData.message || 'Ocorreu um erro desconhecido.');
+      }
 
-        const updatedPage = await response.json();
+      const updatedPage = await response.json();
 
-        this.content[this.currentSection] = updatedPage;
+      this.content[this.currentSection] = updatedPage;
 
-        document.getElementById("content").innerHTML = marked.parse(updatedPage.content);
-        this.highlightCode();
-        this.generateTOC();
+      document.getElementById("content").innerHTML = marked.parse(updatedPage.content);
+      this.highlightCode();
+      this.generateTOC();
 
-        this.closeEditModal();
-        this.showNotification('Página salva com sucesso no servidor!', 'success');
+      this.closeEditModal();
+      this.showNotification('Página salva com sucesso no servidor!', 'success');
 
     } catch (error) {
-        console.error("Falha ao salvar a página:", error);
-        this.showNotification(`Erro ao salvar: ${error.message}`, 'error');
+      console.error("Falha ao salvar a página:", error);
+      this.showNotification(`Erro ao salvar: ${error.message}`, 'error');
     } finally {
-        saveButton.disabled = false;
-        saveButton.innerHTML = originalButtonText;
+      saveButton.disabled = false;
+      saveButton.innerHTML = originalButtonText;
     }
-}
+  }
 
   async addSection() {
     const sectionName = prompt('Nome da nova seção:');
     if (!sectionName || sectionName.trim() === '') {
-      return; 
+      return;
     }
 
     const newPageDTO = {
@@ -416,32 +446,32 @@ class WikiSystem {
   }
 
   async deletePage() {
-        if (!this.pageToDelete) return;
+    if (!this.pageToDelete) return;
 
-        const { id, title } = this.pageToDelete;
+    const { id, title } = this.pageToDelete;
 
-        try {
-            const response = await fetch(`${this.apiBaseUrl}/api/wiki-pages/${id}`, {
-                method: 'DELETE',
-            });
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/api/wiki-pages/${id}`, {
+        method: 'DELETE',
+      });
 
-            if (!response.ok) {
-                throw new Error(`Erro ao excluir a página! Status: ${response.status}`);
-            }
+      if (!response.ok) {
+        throw new Error(`Erro ao excluir a página! Status: ${response.status}`);
+      }
 
-            this.showNotification(`Página "${title}" excluída com sucesso!`, 'success');
-            document.getElementById('confirmDeleteModal').style.display = 'none';
-            this.pageToDelete = null;
+      this.showNotification(`Página "${title}" excluída com sucesso!`, 'success');
+      document.getElementById('confirmDeleteModal').style.display = 'none';
+      this.pageToDelete = null;
 
-            // Recarrega o menu de navegação e vai para a página inicial
-            await this.loadContent();
+      // Recarrega o menu de navegação e vai para a página inicial
+      await this.loadContent();
 
-        } catch (error) {
-            console.error("Falha ao excluir a página:", error);
-            this.showNotification(error.message, 'error');
-            document.getElementById('confirmDeleteModal').style.display = 'none';
-        }
+    } catch (error) {
+      console.error("Falha ao excluir a página:", error);
+      this.showNotification(error.message, 'error');
+      document.getElementById('confirmDeleteModal').style.display = 'none';
     }
+  }
 
   exportPage() {
     const content = this.content[this.currentSection];
@@ -509,40 +539,40 @@ function insertMarkdown(before, after) {
 }
 
 function triggerImageUpload() {
-    document.getElementById('imageUploadInput').click();
+  document.getElementById('imageUploadInput').click();
 }
 
 async function uploadImage(event) {
-    const file = event.target.files[0];
-    if (!file) {
-        return;
+  const file = event.target.files[0];
+  if (!file) {
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  wiki.showNotification('A fazer upload da imagem...', 'info');
+
+  try {
+    const response = await fetch(`${wiki.apiBaseUrl}/api/images/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Falha no upload da imagem.');
     }
 
-    const formData = new FormData();
-    formData.append('image', file);
-    
-    wiki.showNotification('A fazer upload da imagem...', 'info');
+    const imageUrl = await response.text();
 
-    try {
-        const response = await fetch(`${wiki.apiBaseUrl}/api/images/upload`, {
-            method: 'POST',
-            body: formData, 
-        });
+    const markdownToInsert = `\n![Descrição da imagem](${imageUrl})\n`;
+    wiki.insertMarkdown('', markdownToInsert);
+    wiki.showNotification('Imagem inserida com sucesso!', 'success');
 
-        if (!response.ok) {
-            throw new Error('Falha no upload da imagem.');
-        }
-
-        const imageUrl = await response.text();
-
-        const markdownToInsert = `\n![Descrição da imagem](${imageUrl})\n`;
-        wiki.insertMarkdown('', markdownToInsert); 
-        wiki.showNotification('Imagem inserida com sucesso!', 'success');
-
-    } catch (error) {
-        console.error('Erro no upload:', error);
-        wiki.showNotification(error.message, 'error');
-    }
+  } catch (error) {
+    console.error('Erro no upload:', error);
+    wiki.showNotification(error.message, 'error');
+  }
 }
 
 
